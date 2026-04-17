@@ -5,6 +5,9 @@ from .serializers import BookSerializer
 from .scraper import scrape_books
 from .ai_utils import generate_summary
 from .embeddings import store_embedding
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .embeddings import query_books
 
 @api_view(['GET'])
 def get_books(request):
@@ -39,3 +42,17 @@ def scrape_and_store(request):
 
     return Response(saved_books)
 
+@api_view(['POST'])
+def ask_question(request):
+    question = request.data.get("question")
+
+    docs = query_books(question)
+
+    context = " ".join([doc for sublist in docs for doc in sublist])
+
+    # Simple response (LLM can be added later)
+    return Response({
+        "question": question,
+        "answer": context,
+        "sources": docs
+    })

@@ -14,3 +14,13 @@ def store_embedding(book_id, text):
         embeddings=[embedding],
         ids=[str(book_id)]
     )
+
+def query_books(question):
+    query_embedding = model.encode(question).tolist()
+
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=3
+    )
+
+    return results['documents']
