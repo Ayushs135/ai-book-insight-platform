@@ -4,6 +4,7 @@ from .models import Book
 from .serializers import BookSerializer
 from .scraper import scrape_books
 from .ai_utils import generate_summary
+from .embeddings import store_embedding
 
 @api_view(['GET'])
 def get_books(request):
@@ -19,7 +20,8 @@ def add_book(request):
 
     serializer = BookSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        book_instance = serializer.save()
+        store_embedding(book_instance.id, book_instance.description)
         return Response(serializer.data)
     return Response(serializer.errors)
 
@@ -31,7 +33,8 @@ def scrape_and_store(request):
     for book in books_data:
         serializer = BookSerializer(data=book)
         if serializer.is_valid():
-            serializer.save()
+            saved = serializer.save()
+            store_embedding(saved.id, saved.description)
             saved_books.append(serializer.data)
 
     return Response(saved_books)
