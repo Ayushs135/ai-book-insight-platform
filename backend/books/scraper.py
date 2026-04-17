@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
+from .ai_utils import generate_summary
 
 def scrape_books():
     driver = webdriver.Chrome()
@@ -37,4 +38,6 @@ def scrape_books():
         })
 
     driver.quit()
+    for book in data:
+        book['summary'] = generate_summary(book.get('description', ''))
     return data

@@ -9,3 +9,5 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+    
+    summary = models.TextField(blank=True, null=True)

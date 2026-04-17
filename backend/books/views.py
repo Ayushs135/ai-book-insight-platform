@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .models import Book
 from .serializers import BookSerializer
 from .scraper import scrape_books
+from .ai_utils import generate_summary
 
 @api_view(['GET'])
 def get_books(request):
@@ -12,7 +13,11 @@ def get_books(request):
 
 @api_view(['POST'])
 def add_book(request):
-    serializer = BookSerializer(data=request.data)
+    data = request.data.copy()
+
+    data['summary'] = generate_summary(data.get('description', ''))
+
+    serializer = BookSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -30,3 +35,4 @@ def scrape_and_store(request):
             saved_books.append(serializer.data)
 
     return Response(saved_books)
+
