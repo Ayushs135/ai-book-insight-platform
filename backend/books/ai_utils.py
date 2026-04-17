@@ -12,9 +12,7 @@ def generate_summary(text: str) -> str:
     try:
         if summarizer is None:
             summarizer = pipeline(
-                "summarization",
-                model="sshleifer/distilbart-cnn-12-6"
-            )  # type: ignore
+                "summarization",model="sshleifer/distilbart-cnn-12-6")  # type: ignore
 
         raw_result = summarizer(
             text,
