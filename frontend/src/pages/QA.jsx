@@ -3,49 +3,78 @@ import API from "../services/api";
 
 export default function QA() {
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const askQuestion = async () => {
     if (!question) return;
 
+    const newMessages = [...messages, { type: "user", text: question }];
+    setMessages(newMessages);
+    setQuestion("");
     setLoading(true);
+
     try {
       const res = await API.post("ask/", { question });
-      setAnswer(res.data.answer);
-    } catch (err) {
-      console.error(err);
-      setAnswer("Error fetching answer");
+
+      setMessages([
+        ...newMessages,
+        { type: "bot", text: res.data.answer }
+      ]);
+    } catch {
+      setMessages([
+        ...newMessages,
+        { type: "bot", text: "Error getting response" }
+      ]);
     }
+
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-2xl font-bold">Ask AI</h1>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
 
-      <input
-        className="border p-2 w-full mt-4 rounded"
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        placeholder="Ask about books..."
-      />
+      {/* Header */}
+      <div className="p-4 bg-white shadow text-lg font-semibold">
+        🤖 Ask AI
+      </div>
 
-      <button
-        onClick={askQuestion}
-        className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
-      >
-        Ask
-      </button>
+      {/* Chat */}
+      <div className="flex-1 p-6 max-w-3xl mx-auto w-full">
 
-      {loading && <p className="mt-4">Thinking...</p>}
+        {messages.map((msg, i) => (
+          <div
+            key={i}
+            className={`mb-4 p-3 rounded-lg max-w-xl ${
+              msg.type === "user"
+                ? "bg-blue-500 text-white ml-auto"
+                : "bg-white shadow"
+            }`}
+          >
+            {msg.text}
+          </div>
+        ))}
 
-      {answer && (
-        <div className="mt-4 p-4 border rounded bg-white">
-          <strong>Answer:</strong>
-          <p>{answer}</p>
-        </div>
-      )}
+        {loading && <p className="text-gray-500">Thinking...</p>}
+
+      </div>
+
+      {/* Input */}
+      <div className="p-4 bg-white flex gap-2">
+        <input
+          className="flex-1 border p-2 rounded"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="Ask something about books..."
+        />
+
+        <button
+          onClick={askQuestion}
+          className="bg-blue-500 text-white px-4 rounded"
+        >
+          Send
+        </button>
+      </div>
     </div>
   );
 }

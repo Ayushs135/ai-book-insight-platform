@@ -4,9 +4,13 @@ import QA from "./pages/QA";
 
 function Navbar() {
   return (
-    <div className="bg-white shadow p-4 flex gap-6">
-      <Link to="/" className="font-bold">Dashboard</Link>
-      <Link to="/qa">Ask AI</Link>
+    <div className="bg-white shadow p-4 flex justify-between">
+      <h1 className="font-bold">AI Book Platform</h1>
+
+      <div className="flex gap-4">
+        <Link to="/">Dashboard</Link>
+        <Link to="/qa">Ask AI</Link>
+      </div>
     </div>
   );
 }
