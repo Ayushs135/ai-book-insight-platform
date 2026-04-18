@@ -9,30 +9,41 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 def generate_answer(question: str, context: str) -> str:
     try:
         prompt = f"""
-        You are a helpful AI assistant.
+You are a helpful AI assistant.
 
-        Answer the question using ONLY the provided context.
-        IMPORTANT:
-        - If asked about highest rating, compare ratings
-        - If asked about cheapest, compare price
-        - Be precise and concise. Use only the information given in the context.
-        If the answer is not present, say "Not found in data".
+Answer the question using ONLY the provided data.
 
-        Context:
-        {context}
+IMPORTANT RULES:
+- Always give a COMPLETE sentence (not short phrases)
+- Mention FULL book title (do NOT truncate)
+- Include rating if relevant
+- If comparing (highest, lowest, cheapest), clearly state the result
+- Be precise but NOT overly short
+- Do NOT use "..." or cut sentences
+- If answer not present, say "Not found in data"
 
-        Question:
-        {question}
+Data:
+{context}
 
-        Answer:
-        """
+Question:
+{question}
+
+Answer:
+"""
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=prompt
+            contents=prompt,
+            config={
+                "temperature": 0.3,
+                "max_output_tokens": 200
+            }
         )
 
-        return response.text if response.text else "No answer generated"
+        if hasattr(response, "text") and response.text:
+            return response.text.strip()
+
+        return "No answer generated"
 
     except Exception as e:
         print("Gemini error:", e)

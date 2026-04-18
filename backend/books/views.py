@@ -54,13 +54,10 @@ def scrape_and_store(request):
         serializer = BookSerializer(data=book)
 
         if serializer.is_valid():
-            saved = cast(Book, serializer.save())  
-
-            # Store embedding safely
-            if saved.description:
-                store_embedding(saved.id, saved.description)
-
+            saved = serializer.save()
             saved_books.append(serializer.data)
+        else:
+            print("❌ Serializer error:", serializer.errors) 
 
     return Response(saved_books)
 
@@ -68,27 +65,37 @@ def scrape_and_store(request):
 # POST RAG query
 @api_view(['POST'])
 def ask_question(request):
-    question: str = request.data.get("question", "")
+    question: str = request.data.get("question", "").lower()
 
     if not question:
         return Response({"error": "Question is required"}, status=400)
 
+    if "highest rating" in question:
+        top_book = Book.objects.order_by('-rating').first()
+
+        if top_book:
+            answer = f"{top_book.title} has the highest rating of {top_book.rating}."
+        else:
+            answer = "No data available."
+
+        return Response({
+            "question": question,
+            "answer": answer,
+            "source": top_book.title if top_book else None,
+            "type": "direct"
+        })
+
     docs = query_books(question) or []
 
-    books = Book.objects.all()
-
-    structured_context = "\n".join([
-        f"Title: {b.title}, Rating: {b.rating}, Description: {b.description}"
-        for b in books
-    ])
-
-    # Combine both
-    context = structured_context
+    context = " ".join(
+        doc for sublist in docs if sublist for doc in sublist
+    )
 
     answer = generate_answer(question, context)
 
     return Response({
         "question": question,
         "answer": answer,
-        "sources": docs
+        "sources": docs,
+        "type": "rag"
     })
