@@ -2,6 +2,7 @@ from typing import cast, List
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
 from .models import Book
 from .serializers import BookSerializer
@@ -84,3 +85,31 @@ def ask_question(request):
         "answer": answer,
         "type": "gemini"
     })
+
+
+
+@api_view(['GET'])
+def get_book_detail(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    serializer = BookSerializer(book)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_similar_books(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+
+    # Use description for similarity search
+    docs = query_books(book.description) or []
+
+    # Flatten + remove duplicates
+    flat = []
+    for sub in docs:
+        for d in sub:
+            if d not in flat:
+                flat.append(d)
+
+    # Match back to DB (simple heuristic)
+    similar_books = Book.objects.filter(description__in=flat)[:3]
+
+    serializer = BookSerializer(similar_books, many=True)
+    return Response(serializer.data)

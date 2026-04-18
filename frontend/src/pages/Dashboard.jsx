@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";  
 import API from "../services/api";
 
 export default function Dashboard() {
@@ -49,7 +50,16 @@ export default function Dashboard() {
               key={book.id}
               className="bg-white p-5 rounded-2xl shadow hover:shadow-lg transition duration-300"
             >
-              <h2 className="font-semibold text-lg">{book.title}</h2>
+              
+              {}
+              <h2 className="font-semibold text-lg">
+                <Link
+                  to={`/book/${book.id}`}
+                  className="hover:underline text-blue-600"
+                >
+                  {book.title}
+                </Link>
+              </h2>
 
               <p className="text-sm text-gray-500">
                 Author: {book.author}
