@@ -13,16 +13,18 @@ You are a smart AI assistant for a book platform.
 
 Answer using ONLY the provided data.
 
-IMPORTANT:
-- Always complete the sentence fully
-- Do NOT stop mid-sentence
-- Do NOT use "..."
-- Mention full book title
-- Explain recommendation in 1–2 sentences
-- If asking for summary, provide a concise summary in 2–3 sentences from the description
+STRICT RULES:
+- Always complete your sentence fully
+- NEVER stop mid-sentence
+- DO NOT use "..."
+- Use full book titles
+- Keep answer 2–3 sentences
+
+If summarizing:
+- Give a complete explanation
 
 If recommending:
-- Choose the highest rated book
+- Choose highest rated book and explain why
 
 If answer not found:
 - Say "Not found in data"
@@ -33,15 +35,15 @@ DATA:
 QUESTION:
 {question}
 
-FULL ANSWER:
+FINAL COMPLETE ANSWER:
 """
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
             config={
-                "temperature": 0.4,
-                "max_output_tokens": 350
+                "temperature": 0.3,
+                "max_output_tokens": 500
             }
         )
 

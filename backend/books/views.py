@@ -86,8 +86,8 @@ def ask_question(request):
     books = Book.objects.order_by('-rating')[:5]
 
     context = "\n".join([
-        f"Title: {b.title}, Author: {b.author}, Rating: {b.rating}, Description: {b.description}"
-        for b in books
+    f"Title: {b.title}, Rating: {b.rating}, Summary: {b.summary[:200]}"
+    for b in books
     ])
 
     answer = generate_answer(question, context)
