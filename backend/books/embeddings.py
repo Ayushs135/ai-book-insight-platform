@@ -6,15 +6,23 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 client = chromadb.Client()
 collection = client.get_or_create_collection(name="books")
 
-def store_embedding(book_id, text):
+
+# Store embedding with metadata
+def store_embedding(book_id, text, title=""):
     embedding = model.encode(text).tolist()
 
     collection.add(
         documents=[text],
         embeddings=[embedding],
-        ids=[str(book_id)]
+        ids=[str(book_id)],
+        metadatas=[{
+            "book_id": str(book_id),
+            "title": title
+        }]
     )
 
+
+# Query similar books properly
 def query_books(question):
     query_embedding = model.encode(question).tolist()
 
@@ -23,4 +31,7 @@ def query_books(question):
         n_results=3
     )
 
-    return results['documents']
+    # Return IDs instead of text
+    ids = results.get("ids", [[]])[0]
+
+    return ids

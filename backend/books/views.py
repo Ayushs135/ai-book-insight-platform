@@ -1,4 +1,4 @@
-from typing import cast, List
+from typing import cast
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -10,10 +10,7 @@ from .scraper import scrape_books
 from .ai_utils import generate_summary
 from .embeddings import store_embedding, query_books
 from .gemini_utils import generate_answer
-from django.db import models
 
-
-qa_cache = {}
 
 # GET all books
 @api_view(['GET'])
@@ -28,20 +25,24 @@ def get_books(request):
 def add_book(request):
     data = request.data.copy()
 
-    # Generate summary safely
     data['summary'] = generate_summary(data.get('description', ''))
 
     serializer = BookSerializer(data=data)
+
     if serializer.is_valid():
-        book_instance = cast(Book, serializer.save())  # type-safe
+        book_instance = cast(Book, serializer.save())
 
-        # Store embedding
+        # FIXED: correct variable
         if book_instance.description:
-            store_embedding(book_instance.id, book_instance.description)
+            store_embedding(
+                book_instance.id,
+                book_instance.description,
+                book_instance.title
+            )
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=201)
 
-    return Response(serializer.errors)
+    return Response(serializer.errors, status=400)
 
 
 # POST scrape + store books
@@ -56,9 +57,19 @@ def scrape_and_store(request):
 
         if serializer.is_valid():
             saved = serializer.save()
+
+            # IMPORTANT: store embeddings here
+            if saved.description:
+                store_embedding(
+                    saved.id,
+                    saved.description,
+                    saved.title
+                )
+
             saved_books.append(serializer.data)
+
         else:
-            print("❌ Serializer error:", serializer.errors) 
+            print(" Serializer error:", serializer.errors)
 
     return Response(saved_books)
 
@@ -66,12 +77,13 @@ def scrape_and_store(request):
 # POST RAG query
 @api_view(['POST'])
 def ask_question(request):
-    question: str = request.data.get("question", "")
+    question = request.data.get("question", "")
 
     if not question:
         return Response({"error": "Question is required"}, status=400)
 
-    books = Book.objects.all()[:10]
+    # Better context
+    books = Book.objects.order_by('-rating')[:5]
 
     context = "\n".join([
         f"Title: {b.title}, Author: {b.author}, Rating: {b.rating}, Description: {b.description}"
@@ -87,29 +99,38 @@ def ask_question(request):
     })
 
 
-
+# GET single book detail
 @api_view(['GET'])
 def get_book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
     serializer = BookSerializer(book)
     return Response(serializer.data)
 
+
+# GET similar books
 @api_view(['GET'])
 def get_similar_books(request, pk):
-    book = get_object_or_404(Book, pk=pk)
+    try:
+        book = Book.objects.get(pk=pk)
 
-    # Use description for similarity search
-    docs = query_books(book.description) or []
+        # Safe query
+        similar_ids = query_books(book.description) or []
 
-    # Flatten + remove duplicates
-    flat = []
-    for sub in docs:
-        for d in sub:
-            if d not in flat:
-                flat.append(d)
+        # Convert to int safely
+        similar_ids = [
+            int(i) for i in similar_ids
+            if isinstance(i, str) and i.isdigit()
+        ]
 
-    # Match back to DB (simple heuristic)
-    similar_books = Book.objects.filter(description__in=flat)[:3]
+        # Remove current book
+        similar_ids = [i for i in similar_ids if i != book.id]
 
-    serializer = BookSerializer(similar_books, many=True)
-    return Response(serializer.data)
+        # Fetch from DB
+        similar_books = Book.objects.filter(id__in=similar_ids)[:3]
+
+        serializer = BookSerializer(similar_books, many=True)
+        return Response(serializer.data)
+
+    except Exception as e:
+        print("SIMILAR ERROR:", e)
+        return Response([], status=200)
