@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.service import Service
 
 
 def scrape_books():
-    # ✅ Setup driver
+    # Setup driver
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     driver.get("https://books.toscrape.com/catalogue/category/books/history_32/index.html")
@@ -37,7 +37,7 @@ def scrape_books():
 
             print("Scraping:", title)
 
-            # ⭐ Rating
+            # Rating
             rating_class = book.find_element(By.CLASS_NAME, "star-rating").get_attribute("class")
             if rating_class:
                 rating_text = rating_class.split()[-1]
@@ -45,30 +45,30 @@ def scrape_books():
             else:
                 rating = None
 
-            # 🔗 Book link
+            # Book link
             link = book.find_element(By.TAG_NAME, "a").get_attribute("href")
             if not link:
                 continue
 
-            # 🔥 OPEN IN NEW TAB (stable approach)
+            # OPEN IN NEW TAB (stable approach)
             driver.execute_script("window.open('');")
             driver.switch_to.window(driver.window_handles[1])
 
             driver.get(link)
             time.sleep(1)
 
-            # 📖 Description
+            # Description
             try:
                 description = driver.find_element(By.ID, "product_description") \
                     .find_element(By.XPATH, "following-sibling::p").text
             except:
                 description = "No description available"
 
-            # 🔙 Close tab and return
+            # Close tab and return
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
 
-            # ✅ Save data
+            # Save data
             data.append({
                 "title": title,
                 "author": "Unknown",
@@ -83,7 +83,7 @@ def scrape_books():
 
     driver.quit()
 
-    # ✅ Generate summaries (can disable if slow)
+    # Generate summaries (can disable if slow)
     for book in data:
         try:
             book['summary'] = generate_summary(book.get('description', ''))
