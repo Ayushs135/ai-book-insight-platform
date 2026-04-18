@@ -9,34 +9,39 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 def generate_answer(question: str, context: str) -> str:
     try:
         prompt = f"""
-You are a helpful AI assistant.
+You are a smart AI assistant for a book platform.
 
-Answer the question using ONLY the provided data.
+Answer using ONLY the provided data.
 
-IMPORTANT RULES:
-- Always give a COMPLETE sentence (not short phrases)
-- Mention FULL book title (do NOT truncate)
-- Include rating if relevant
-- If comparing (highest, lowest, cheapest), clearly state the result
-- Be precise but NOT overly short
-- Do NOT use "..." or cut sentences
-- If answer not present, say "Not found in data"
+IMPORTANT:
+- Always complete the sentence fully
+- Do NOT stop mid-sentence
+- Do NOT use "..."
+- Mention full book title
+- Explain recommendation in 1–2 sentences
+- If asking for summary, provide a concise summary in 2–3 sentences from the description
 
-Data:
+If recommending:
+- Choose the highest rated book
+
+If answer not found:
+- Say "Not found in data"
+
+DATA:
 {context}
 
-Question:
+QUESTION:
 {question}
 
-Answer:
+FULL ANSWER:
 """
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
             config={
-                "temperature": 0.3,
-                "max_output_tokens": 200
+                "temperature": 0.4,
+                "max_output_tokens": 350
             }
         )
 
