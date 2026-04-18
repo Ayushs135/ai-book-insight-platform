@@ -11,7 +11,7 @@ def scrape_books():
     # ✅ Setup driver
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
-    driver.get("https://books.toscrape.com")
+    driver.get("https://books.toscrape.com/catalogue/category/books/history_32/index.html")
 
     books = driver.find_elements(By.CLASS_NAME, "product_pod")
 

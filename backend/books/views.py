@@ -82,7 +82,7 @@ def ask_question(request):
     if not question:
         return Response({"error": "Question is required"}, status=400)
 
-    # Better context
+    # Use top books as context
     books = Book.objects.order_by('-rating')[:5]
 
     context = "\n".join([
@@ -92,10 +92,18 @@ def ask_question(request):
 
     answer = generate_answer(question, context)
 
+    sources = [
+        {
+            "id": b.id,
+            "title": b.title
+        }
+        for b in books
+    ]
+
     return Response({
         "question": question,
         "answer": answer,
-        "type": "gemini"
+        "sources": sources
     })
 
 
@@ -113,20 +121,20 @@ def get_similar_books(request, pk):
     try:
         book = Book.objects.get(pk=pk)
 
-        # Safe query
         similar_ids = query_books(book.description) or []
 
-        # Convert to int safely
-        similar_ids = [
+        print("SIMILAR IDS:", similar_ids)
+
+        similar_ids = list(set([
             int(i) for i in similar_ids
             if isinstance(i, str) and i.isdigit()
-        ]
+        ]))
 
-        # Remove current book
-        similar_ids = [i for i in similar_ids if i != book.id]
-
-        # Fetch from DB
-        similar_books = Book.objects.filter(id__in=similar_ids)[:3]
+        if not similar_ids:
+            print("FALLBACK TRIGGERED")
+            similar_books = Book.objects.exclude(id=book.id).order_by('-rating')[:3]
+        else:
+            similar_books = Book.objects.filter(id__in=similar_ids).exclude(id=book.id)[:3]
 
         serializer = BookSerializer(similar_books, many=True)
         return Response(serializer.data)
