@@ -6,9 +6,8 @@ import time
 from selenium.webdriver.chrome.service import Service
 
 
-
 def scrape_books():
-    # Setup driver
+    # Setup driver for scraping 
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     driver.get("https://books.toscrape.com/catalogue/category/books/history_32/index.html")
@@ -16,7 +15,7 @@ def scrape_books():
     books = driver.find_elements(By.CLASS_NAME, "product_pod")
 
     data = []
-
+    # Map textual ratings to numeric values
     rating_map = {
         "One": 1,
         "Two": 2,
@@ -31,7 +30,7 @@ def scrape_books():
 
             title = title_element.get_attribute("title")
 
-# Fallback (VERY IMPORTANT)
+    # Fallback to text if title attribute is missing
             if not title:
                 title = title_element.text
 
