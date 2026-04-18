@@ -19,3 +19,6 @@ db.sqlite3
 # OS files
 .DS_Store
 Thumbs.db
+
+# Node modules
+node_modules/
