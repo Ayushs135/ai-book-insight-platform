@@ -8,8 +8,11 @@ from .serializers import BookSerializer
 from .scraper import scrape_books
 from .ai_utils import generate_summary
 from .embeddings import store_embedding, query_books
+from .gemini_utils import generate_answer
 from django.db import models
 
+
+qa_cache = {}
 
 # GET all books
 @api_view(['GET'])
@@ -70,16 +73,27 @@ def ask_question(request):
     if not question:
         return Response({"error": "Question is required"}, status=400)
 
-    # Get similar documents
-    docs: List[List[str]] = query_books(question) or []
+    if question in qa_cache:
+        return Response({
+            "question": question,
+            "answer": qa_cache[question],
+            "cached": True
+        })
 
-    # Flatten safely
+    docs = query_books(question) or []
+
     context = " ".join(
         doc for sublist in docs if sublist for doc in sublist
     )
 
+    answer = generate_answer(question, context)
+
+
+    qa_cache[question] = answer
+
     return Response({
         "question": question,
-        "answer": context,
-        "sources": docs
+        "answer": answer,
+        "sources": docs,
+        "cached": False
     })
