@@ -12,6 +12,10 @@ def generate_answer(question: str, context: str) -> str:
         You are a helpful AI assistant.
 
         Answer the question using ONLY the provided context.
+        IMPORTANT:
+        - If asked about highest rating, compare ratings
+        - If asked about cheapest, compare price
+        - Be precise and concise. Use only the information given in the context.
         If the answer is not present, say "Not found in data".
 
         Context:
