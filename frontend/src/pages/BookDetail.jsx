@@ -69,7 +69,7 @@ export default function BookDetail() {
 
       </div>
 
-      {/* 🔥 Similar Books */}
+      {/* Similar Books */}
       <div className="max-w-4xl mx-auto mt-8">
         <h2 className="text-xl font-bold mb-4">
           📚 Similar Books

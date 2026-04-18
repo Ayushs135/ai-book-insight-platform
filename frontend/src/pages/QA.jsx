@@ -19,12 +19,16 @@ export default function QA() {
 
       setMessages([
         ...newMessages,
-        { type: "bot", text: res.data.answer }
+        {
+          type: "bot",
+          text: res.data.answer,
+          sources: res.data.sources || []   // store sources
+        }
       ]);
     } catch {
       setMessages([
         ...newMessages,
-        { type: "bot", text: "Error getting response" }
+        { type: "bot", text: "Error getting response", sources: [] }
       ]);
     }
 
@@ -51,7 +55,20 @@ export default function QA() {
                 : "bg-white shadow"
             }`}
           >
-            {msg.text}
+            {/* Message text */}
+            <p>{msg.text}</p>
+
+            {/* Sources (only for bot) */}
+            {msg.type === "bot" && msg.sources && msg.sources.length > 0 && (
+              <div className="mt-3 text-sm text-gray-500">
+                <strong>Sources:</strong>
+                {msg.sources.map((s) => (
+                  <p key={s.id} className="text-blue-500 hover:underline cursor-pointer">
+                    {s.title}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
         ))}
 
