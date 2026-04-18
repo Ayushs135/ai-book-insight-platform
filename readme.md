@@ -182,10 +182,8 @@ I recommend "Sapiens: A Brief History of Humankind" because it has the highest r
 - A Distant Mirror: The Calamitous 14th Century  
 - 1491: New Revelations of the Americas Before Columbus  
 
-<p float="left">
-  <img src="./screenshots/ai_answer(1).png" width="400"/>
-  <img src="./screenshots/ai_answer(2).png" width="400"/>
-</p>
+![Ask AI](./screenshots/ai_answer(1).png)
+![Ask AI](./screenshots/ai_answer(2).png)
 
 ---
 
@@ -215,10 +213,8 @@ I recommend "Sapiens: A Brief History of Humankind" because it has the highest r
 ![Book Detail](./screenshots/book_detail.png)
 
 ### Ask AI Page
-<p float="left">
-  <img src="./screenshots/ai_answer(1).png" width="400"/>
-  <img src="./screenshots/ai_answer(2).png" width="400"/>
-</p>
+![Ask AI](./screenshots/ai_answer(1).png)
+![Ask AI](./screenshots/ai_answer(2).png)
 
 ### Similar Books
 ![Similar Books](./screenshots/similar_books.png)
